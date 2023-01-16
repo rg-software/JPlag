@@ -32,6 +32,7 @@ import de.jplag.options.JPlagOptions;
 public class Report { // Mostly legacy code with some minor improvements.
 
     private static final String CSV_FILE = "matches_avg.csv";
+    private static final String PAIR_REPORT_FILE = "pair_report.csv";
     private static final String[] PICS = {"forward.gif", "back.gif"};
 
     private final Map<JPlagComparison, Integer> comparisonToIndex = new HashMap<>();
@@ -419,10 +420,41 @@ public class Report { // Mostly legacy code with some minor improvements.
         writeLinksToComparisons(htmlFile, "<H4>" + msg.getString("Report.MatchesAvg"), CSV_FILE);
 
         writeMatchesCSV(CSV_FILE);
+        writePairReportCSV(PAIR_REPORT_FILE);
 
         writeIndexEnd(htmlFile);
 
         htmlFile.close();
+    }
+
+    private void writePairReportCSV(String fileName) {
+        FileWriter writer = null;
+        File csvFile = new File(reportDir, fileName);
+        List<JPlagComparison> comparisons = result.getComparisons();
+
+        try {
+            csvFile.createNewFile();
+            writer = new FileWriter(csvFile);
+
+            for (JPlagComparison comparison : comparisons) {
+                String submissionNameA = comparison.getFirstSubmission().getName();
+                String submissionNameB = comparison.getSecondSubmission().getName();
+
+                writer.write(submissionNameA + ";");
+                writer.write(submissionNameB + ";");
+                writer.write("match" + getComparisonIndex(comparison) + ".html;");
+                writer.write("\n");
+            }
+
+            writer.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                writer.close();
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     /**
